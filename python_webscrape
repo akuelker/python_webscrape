@@ -1,0 +1,29 @@
+from bs4 import BeautifulSoup
+from selenium import webdriver
+import pandas as pd
+import re
+
+
+page_link = 'https://www.orangetheoryfitness.com/service/directorylisting?gclid=EAIaIQobChMI8qHb2P2l4gIVi8DACh0B1wPDEAAYASAAEgL7Q_D_BwE/'
+
+options = webdriver.ChromeOptions()
+prefs = {"profile.default_content_setting_values.geolocation" :2}
+options.add_experimental_option("prefs",prefs)
+driver = webdriver.Chrome(options=options)
+
+driver.get(page_link)
+
+soup = BeautifulSoup(driver.page_source, 'html.parser')
+
+address = soup.findAll('div', class_="entry_address")
+
+df = pd.DataFrame([])
+
+for x in address:
+ raw_data = x.find('br').nextSibling
+ split_data = re.split(r'^([^,]+),\s([A-Z]{2})(?:\s(\d{5}))?$', raw_data)
+ split_data = [i for i in split_data if i]
+ df = df.append(split_data)
+
+
+print(df)
